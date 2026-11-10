@@ -1,29 +1,35 @@
 {
-  "name": "triggerfish",
+  "name": "rea-sabangnet",
   "version": "0.1.0",
-  "description": "스마트스토어 매출 정산 엔진 — 사방넷 정산관리 핵심 기능을 참고해 구현한 멀티채널 정산/대사 코어",
+  "description": "스마트스토어 매출 정산 엔진 + 웹앱 — 사방넷 정산관리 핵심 기능을 참고해 구현한 멀티채널 정산/대사 코어",
+  "private": true,
   "type": "module",
   "engines": {
-    "node": ">=18"
-  },
-  "bin": {
-    "triggerfish": "dist/cli.js"
+    "node": ">=18.18"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "dev": "tsx src/cli.ts",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "cli": "tsx src/cli.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build:demo": "node scripts/build-demo.mjs"
   },
   "dependencies": {
+    "next": "^14.2.18",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/node": "^20.17.9",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "esbuild": "^0.24.0",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3",
-    "vitest": "^2.1.8",
-    "@types/node": "^20.17.9"
+    "vitest": "^2.1.8"
   }
 }

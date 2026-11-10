@@ -15,3 +15,4 @@ export {
   parseActualSettlements,
   normalizeDate,
 } from "./io/smartstore.js";
+export { processCsv, type ProcessOptions, type ProcessResult } from "./service/process.js";

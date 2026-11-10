@@ -1,6 +1,10 @@
-# triggerfish — 스마트스토어 매출 정산 엔진
+# rea-sabangnet — 스마트스토어 매출 정산 엔진 + 웹앱
 
-사방넷(sabangnet) **정산관리** 기능을 참고해 구현한, 네이버 스마트스토어 **매출 정산/대사(reconciliation)** 코어입니다. TypeScript + Node, 외부 런타임 의존성은 `zod`뿐이며 정산 계산·대사·집계는 순수 도메인 로직으로 분리돼 있습니다.
+사방넷(sabangnet) **정산관리** 기능을 참고해 구현한, 네이버 스마트스토어 **매출 정산/대사(reconciliation)** 코어입니다. 정산 계산·대사·집계는 프레임워크에 독립적인 순수 도메인 로직이며, 그 위에 **CLI**, **Next.js 웹앱(서버 API, Vercel 배포)**, **정적 웹 데모(GitHub Pages)** 세 가지 프런트가 같은 엔진을 공유합니다.
+
+- 🖥️ **실제 웹앱** (Next.js + 서버 API `/api/process`) → Vercel
+- 🌐 **정적 데모** (브라우저에서 바로 계산, 서버 없음) → GitHub Pages
+- ⌨️ **CLI** (`settle`/`report`/`reconcile`)
 
 ---
 
@@ -57,8 +61,13 @@ src/
   io/
     csv.ts            의존성 없는 CSV 파서/직렬화기
     smartstore.ts     스마트스토어 엑셀/CSV 한글 헤더 → 도메인 매핑
+  service/
+    process.ts        공용 파이프라인(CLI·서버 API·데모가 재사용)
+    samples.ts        예시 CSV
   cli.ts              settle / report / reconcile 명령
   index.ts            공개 API
+app/                  Next.js 웹앱 (Vercel) — page/ResultView/api/process
+web-demo/ + scripts/  정적 데모 소스 + 빌드 스크립트 → docs/ (GitHub Pages)
 ```
 
 ## 3. 사용법
@@ -103,7 +112,39 @@ const report = reconcile(lines, actualSettlements, /* tolerance */ 0);
 - 구매확정일이 없으면 배송완료 +8일 자동확정으로 **추정**하고 `warnings`에 남깁니다.
 - 멀티채널 확장: `SalesChannelPath`/요율표/파서를 채널별로 추가하면 쿠팡·11번가 등으로 확장 가능(사방넷식 통합 정산).
 
-## 6. 한계 / 다음 단계
+## 6. 웹앱 & 배포
+
+### 6-1. 실제 웹앱 (Next.js → Vercel)
+
+```bash
+npm run dev     # http://localhost:3000
+npm run build   # 프로덕션 빌드
+```
+
+- `app/page.tsx` — CSV 입력 폼 + 결과 UI (클라이언트)
+- `app/api/process/route.ts` — 서버에서 `processCsv` 실행 (Node 런타임, `/api/process`)
+- `app/ResultView.tsx` — 결과 렌더링
+- 입력 CSV → 서버 API에서 정산/대사 계산 → 표로 표시하는 **진짜 풀스택 앱**.
+
+**Vercel 배포** (설정 파일 불필요, Next.js 자동 감지):
+1. [vercel.com](https://vercel.com) → **Add New → Project → Import Git Repository** 에서 이 레포 선택
+2. 프레임워크 `Next.js` 자동 인식 → **Deploy**
+   (또는 로컬에서 `npx vercel` → 로그인 후 배포)
+
+### 6-2. 정적 데모 (GitHub Pages)
+
+```bash
+npm run build:demo   # web-demo/main.ts → docs/ 정적 사이트 생성(esbuild 번들)
+```
+
+- 서버 없이 **브라우저에서 동일 엔진을 직접 실행**. 입력 데이터가 외부로 전송되지 않음.
+- 배포: `.github/workflows/pages.yml` 이 `main` 푸시 시 `docs/`를 빌드해 Pages로 자동 배포.
+  저장소 **Settings → Pages → Source: GitHub Actions** 로 한 번 설정 필요.
+- ⚠️ **private 레포에서 GitHub Pages 를 쓰려면 GitHub Pro 이상 플랜이 필요**합니다.
+  무료 플랜이면 (a) 레포를 public 으로 전환하거나 (b) 데모도 Vercel/Netlify 로 올리세요
+  (`docs/`는 정적 파일이라 어디든 호스팅 가능).
+
+## 7. 한계 / 다음 단계
 
 - 요율·공휴일은 시드값 — 운영 반영 전 공식 공지로 갱신 필요.
 - 복수구매할인·즉시할인·포인트 등 **정산 기준 금액 산정**은 입력 `paymentAmount`에 이미 반영됐다고 가정.
